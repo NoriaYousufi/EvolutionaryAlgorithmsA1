@@ -11,12 +11,26 @@ Requirements
 Task 1: Genetic Algorithm
 Some hints:
 - Which variators (i.e., mutation and crossover) and selection operators will you use?
-- What’s your suggestion for the parameter settings (e.g., population size, mutation rate, etc.)?
+- What's your suggestion for the parameter settings (e.g., population size, mutation rate, etc.)?
 """
 
 import random
 import shutil
 from typing import List
+import ioh 
+from ioh import problem
+from ioh import get_problem, ProblemClass
 
-import ioh
+# F18: Low Autocorrelation Binary Sequence (LABS)
+f18 = get_problem("LABS", 1, 100, ProblemClass.PBO)
+print(f18)
+print(f18.meta_data)
+print(f18.bounds)
+print(f18.state)
 
+# F19-F21: The Ising Model
+f19 = get_problem("IsingRing", 1, 100, ProblemClass.PBO)
+f20 = get_problem("IsingTorus", 1, 100, ProblemClass.PBO)
+f21 = get_problem("IsingTriangular", 1, 100, ProblemClass.PBO)
+
+# help(problem)
