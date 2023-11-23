@@ -1,3 +1,25 @@
+"""
+Requirements
+- Implement a genetic algorithm solving the F18 and F19 problems
+- Implement an evolution strategy solving the F18 and F19 problems
+- Submit at least two files 'studentnumber1_studentnumber2_GA.py' and 'studentnumber1_studentnumber2_ES.py'.
+- Additional files of other functions are allowed. Please make sure we can get results by running 'python *_GA.py' and 'python *_ES.py' without additional arguments.
+- Submit a report introducing your algorithms and presenting the experimental results. 
+"""
+
+"""
+Task 1: Genetic Algorithm
+Some hints:
+- Which variators (i.e., mutation and crossover) and selection operators will you use?
+- What's your suggestion for the parameter settings (e.g., population size, mutation rate, etc.)?
+
+Task 2: Evolution Strategy
+- How to handle the representation of binary/discrete variables while applying evolution strategies?
+- What encoding and decoding methods will you use?
+- Which variators (e.g., one-� mutation, correlated mutation, discrete recombination, etc) and selectionmoperators will you use?
+- What’s your suggestion for the parameter settings (e.g., population size, step size, etc.)?
+"""
+
 import sys
 import random 
 import numpy as np
@@ -12,6 +34,8 @@ budget = 5000
 # `np.random.seed(some integer, e.g., 42)`
 np.random.seed(42)
 
+
+# k-point crossover
 def crossover(population, problem, population_size):
     crossover_pop = []
     crossover_points = 2
@@ -28,26 +52,30 @@ def crossover(population, problem, population_size):
         crossover_pop += [child1, child2]
     return crossover_pop
 
-def mutation(corssover_pop, problem):
-    pass
+# TODO check mutation
+# Bitflip mutation
+def mutation(crossover_pop, problem, mutation_rate=0.2):
+    mutated_pop = []
+    for i in range(len(crossover_pop)):
+        for j in range(len(crossover_pop[i])):
+            if random.random() < mutation_rate:
+                crossover_pop[i][j] = random.choice(range(0, 2))
+    mutated_pop = crossover_pop
+    return mutated_pop
 
 def studentname1_studentname2_GA(problem):
     # initial_pop = ... make sure you randomly create the first population
     population_size = 20
     max_dim = problem.meta_data.n_variables
-    # print(max_dim)
 
     # Initialize random populations
     initial_pop = [np.random.randint(0, 2, max_dim).tolist() for _ in range(population_size)]
-    # print(f'initial pop {initial_pop}')
 
     # Calculate fitness values for each individual
     fitness_values = [problem(individual) for individual in initial_pop]
 
     # Sort the population based on the pre-calculated fitness values in descending order
     population_sorted = [x for value, x in sorted(zip(fitness_values, initial_pop), reverse=True)]
-    # print(f'population sorted {population_sorted}')
-
 
     # while not problem.final_target_hit and problem.evaluations < budget * budget:
     #     # please implement the mutation, crossover, selection here
@@ -64,6 +92,7 @@ def studentname1_studentname2_GA(problem):
         crossover_pop = crossover(population_sorted, problem, population_size)
         # Mutation
         mutation_pop = mutation(crossover_pop, problem)
+        print(mutation_pop)
         # Selection
         print("works")
         break
