@@ -19,15 +19,26 @@ def studentname1_studentname2_GA(problem):
     print(max_dim)
 
     # Initialize random populations
-    initial_pop = [np.random.randint(0, 2, max_dim) for _ in range(population_size)]
-    print(initial_pop)
+    initial_pop = [np.random.randint(0, 2, max_dim).tolist() for _ in range(population_size)]
+    print(f'initial pop {initial_pop}')
 
-    while not problem.final_target_hit and problem.evaluations < budget * budget:
-        # please implement the mutation, crossover, selection here
-        # .....
-        # this is how you evaluate one solution `x`
-        # f = problem(x)
-        pass
+    # Calculate fitness values for each individual
+    fitness_values = [problem(individual) for individual in initial_pop]
+
+    # Sort the population based on the pre-calculated fitness values in descending order
+    population_sorted = [x for value, x in sorted(zip(fitness_values, initial_pop), reverse=True)]
+    print(f'population sorted {population_sorted}')
+    pass
+
+    # while not problem.final_target_hit and problem.evaluations < budget * budget:
+    #     # please implement the mutation, crossover, selection here
+    #     # .....
+    #     # this is how you evaluate one solution `x`
+    #     # f = problem(x)
+    #     # Crossover
+    #     # Mutation
+    #     # Selection
+    #     pass
     # no return value needed 
 
 
