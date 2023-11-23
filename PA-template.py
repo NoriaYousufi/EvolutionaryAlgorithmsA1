@@ -12,23 +12,42 @@ budget = 5000
 # `np.random.seed(some integer, e.g., 42)`
 np.random.seed(42)
 
+def crossover(population, problem, population_size):
+    crossover_pop = []
+    crossover_points = 2
+    # TODO check is the first for loop is correct
+    for _ in range(int(population_size/2)):#offspring size can not exceet original population size?
+        parent1 = random.choice(population)
+        parent2 = random.choice(population)
+        for _ in range(crossover_points):
+            point = random.randint(1, problem.meta_data.n_variables-1)
+            child1 = parent1[:point] + parent2[point:]
+            child2 = parent2[:point] + parent1[point:]
+            parent1 = child1
+            parent2 = child2
+        crossover_pop += [child1, child2]
+    return crossover_pop
+
+def mutation(corssover_pop, problem):
+    pass
+
 def studentname1_studentname2_GA(problem):
     # initial_pop = ... make sure you randomly create the first population
     population_size = 20
     max_dim = problem.meta_data.n_variables
-    print(max_dim)
+    # print(max_dim)
 
     # Initialize random populations
     initial_pop = [np.random.randint(0, 2, max_dim).tolist() for _ in range(population_size)]
-    print(f'initial pop {initial_pop}')
+    # print(f'initial pop {initial_pop}')
 
     # Calculate fitness values for each individual
     fitness_values = [problem(individual) for individual in initial_pop]
 
     # Sort the population based on the pre-calculated fitness values in descending order
     population_sorted = [x for value, x in sorted(zip(fitness_values, initial_pop), reverse=True)]
-    print(f'population sorted {population_sorted}')
-    pass
+    # print(f'population sorted {population_sorted}')
+
 
     # while not problem.final_target_hit and problem.evaluations < budget * budget:
     #     # please implement the mutation, crossover, selection here
@@ -39,7 +58,15 @@ def studentname1_studentname2_GA(problem):
     #     # Mutation
     #     # Selection
     #     pass
-    # no return value needed 
+    # # no return value needed 
+    while problem.state.evaluations < budget * budget:
+        # Crossover
+        crossover_pop = crossover(population_sorted, problem, population_size)
+        # Mutation
+        mutation_pop = mutation(crossover_pop, problem)
+        # Selection
+        print("works")
+        break
 
 
 # def studentname1_studentname2_ES(problem):
