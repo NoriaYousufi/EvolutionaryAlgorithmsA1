@@ -22,7 +22,7 @@ from ioh import problem
 from ioh import get_problem, ProblemClass
 
 # F18: Low Autocorrelation Binary Sequence (LABS)
-f18 = get_problem("LABS", 1, 100, ProblemClass.PBO)
+f18 = get_problem("LABS", 1, 30, ProblemClass.PBO)
 print(f18)
 print(f18.meta_data)
 print(f18.bounds)
