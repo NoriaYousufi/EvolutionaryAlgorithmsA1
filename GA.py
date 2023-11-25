@@ -55,6 +55,21 @@ def mutation(crossover_pop, problem, mutation_rate=0.2):
     mutated_pop = crossover_pop
     return mutated_pop
 
+# Tournament selection
+def trounament_selection(pop_sorted, problem, tournament_size):
+    selected_parents = []
+    for _ in range(len(pop_sorted)):
+        tournament_candidates = random.sample(pop_sorted, tournament_size)
+        # print(f"candidates{tournament_candidates}")
+        best_candidate = sorted(tournament_candidates, key=lambda ind: problem(ind), reverse=True)[0]
+        # print(f"best {best_candidate}")
+        selected_parents.append(best_candidate)
+        # print(f"selected {selected_parents}")
+        # break
+    return selected_parents
+
+
+    pass
 
 def studentnumber1_studentnumber2_GA(problem):
     # initial_pop = ... make sure you randomly create the first population
@@ -68,7 +83,7 @@ def studentnumber1_studentnumber2_GA(problem):
     fitness_values = [problem(individual) for individual in initial_pop]
 
     # Sort the population based on the pre-calculated fitness values in descending order
-    population_sorted = [x for value, x in sorted(zip(fitness_values, initial_pop), reverse=True)]
+    offspring_pop_sorted = [x for value, x in sorted(zip(fitness_values, initial_pop), reverse=True)]
 
     # `problem.state.evaluations` counts the number of function evaluation automatically,
     # which is incremented by 1 whenever you call `problem(x)`.
@@ -79,13 +94,25 @@ def studentnumber1_studentnumber2_GA(problem):
         # this is how you evaluate one solution `x`
         # f = problem(x)
         # Crossover
-        crossover_pop = crossover(population_sorted, problem, population_size)
+        crossover_pop = crossover(offspring_pop_sorted, problem, population_size)
         # Mutation
         mutation_pop = mutation(crossover_pop, problem)
-        print(mutation_pop)
+
         # Selection
-        print("works")
-        break
+        # Calculate fitness values for each individual
+        fitness_values = [problem(individual) for individual in mutation_pop]
+
+        # Sort the population based on the pre-calculated fitness values in descending order
+        pop_sorted = [x for value, x in sorted(zip(fitness_values, mutation_pop), reverse=True)]
+
+        # if problem(pop_sorted[0]) == max_dim:
+        #     print(f'problem solved in {problem.state.evaluations} evaluations')
+        #     return problem.state.current_best
+
+        offspring_pop_sorted = trounament_selection(pop_sorted, problem, tournament_size=5)
+
+    print(f"current best after using whole budget {problem.state.current_best}")
+    return problem.state.current_best
     # no return value needed 
 
 
@@ -115,9 +142,9 @@ if __name__ == "__main__":
         F18.reset() # it is necessary to reset the problem after each independent run
     _logger.close() # after all runs, it is necessary to close the logger to make sure all data are written to the folder
 
-    F19, _logger = create_problem(19)
-    for run in range(20): 
-        print('f19')
-        studentnumber1_studentnumber2_GA(F19)
-        F19.reset()
-    _logger.close()
+    # F19, _logger = create_problem(19)
+    # for run in range(20): 
+    #     print('f19')
+    #     studentnumber1_studentnumber2_GA(F19)
+    #     F19.reset()
+    # _logger.close()
