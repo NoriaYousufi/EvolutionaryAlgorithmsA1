@@ -28,9 +28,9 @@ np.random.seed(42)
 
 
 # k-point crossover
-def crossover(population, problem, population_size):
+def k_point_crossover(population, problem, population_size):
     crossover_pop = []
-    crossover_points = 2
+    crossover_points = 4
     # TODO check is the first for loop is correct
     for _ in range(int(population_size/2)):#offspring size can not exceet original population size?
         parent1 = random.choice(population)
@@ -46,13 +46,13 @@ def crossover(population, problem, population_size):
 
 # TODO check mutation
 # Bitflip mutation
-def mutation(crossover_pop, problem, mutation_rate=0.2):
+def bitflip_mutation(crossover_pop, problem, mutation_rate=0.1):
     mutated_pop = []
     for i in range(len(crossover_pop)):
         for j in range(len(crossover_pop[i])):
             if random.random() < mutation_rate:
                 crossover_pop[i][j] = random.choice(range(0, 2))
-    mutated_pop = crossover_pop
+        mutated_pop.append(crossover_pop[i])
     return mutated_pop
 
 # Tournament selection
@@ -60,16 +60,9 @@ def trounament_selection(pop_sorted, problem, tournament_size):
     selected_parents = []
     for _ in range(len(pop_sorted)):
         tournament_candidates = random.sample(pop_sorted, tournament_size)
-        # print(f"candidates{tournament_candidates}")
         best_candidate = sorted(tournament_candidates, key=lambda ind: problem(ind), reverse=True)[0]
-        # print(f"best {best_candidate}")
         selected_parents.append(best_candidate)
-        # print(f"selected {selected_parents}")
-        # break
     return selected_parents
-
-
-    pass
 
 def studentnumber1_studentnumber2_GA(problem):
     # initial_pop = ... make sure you randomly create the first population
@@ -79,39 +72,33 @@ def studentnumber1_studentnumber2_GA(problem):
     # Initialize random populations
     initial_pop = [np.random.randint(0, 2, max_dim).tolist() for _ in range(population_size)]
 
-    # Calculate fitness values for each individual
-    fitness_values = [problem(individual) for individual in initial_pop]
-
-    # Sort the population based on the pre-calculated fitness values in descending order
-    offspring_pop_sorted = [x for value, x in sorted(zip(fitness_values, initial_pop), reverse=True)]
+    # Sort the population based on the calculated fitness values in descending order
+    offspring_pop_sorted = sorted(initial_pop, key=lambda i: problem(i), reverse=True)
 
     # `problem.state.evaluations` counts the number of function evaluation automatically,
     # which is incremented by 1 whenever you call `problem(x)`.
     # You could also maintain a counter of function evaluations if you prefer.
+    count = 0
     while problem.state.evaluations < budget:
         # please implement the mutation, crossover, selection here
         # .....
         # this is how you evaluate one solution `x`
         # f = problem(x)
         # Crossover
-        crossover_pop = crossover(offspring_pop_sorted, problem, population_size)
+        crossover_pop = k_point_crossover(offspring_pop_sorted, problem, population_size)
         # Mutation
-        mutation_pop = mutation(crossover_pop, problem)
+        mutation_pop = bitflip_mutation(crossover_pop, problem)
 
         # Selection
-        # Calculate fitness values for each individual
-        fitness_values = [problem(individual) for individual in mutation_pop]
+        # Sort the population based on the calculated fitness values in descending order
+        pop_sorted = sorted(mutation_pop, key=lambda i: problem(i), reverse=True)
 
-        # Sort the population based on the pre-calculated fitness values in descending order
-        pop_sorted = [x for value, x in sorted(zip(fitness_values, mutation_pop), reverse=True)]
-
-        # if problem(pop_sorted[0]) == max_dim:
-        #     print(f'problem solved in {problem.state.evaluations} evaluations')
-        #     return problem.state.current_best
-
-        offspring_pop_sorted = trounament_selection(pop_sorted, problem, tournament_size=5)
-
-    print(f"current best after using whole budget {problem.state.current_best}")
+        offspring_pop_sorted = trounament_selection(pop_sorted, problem, tournament_size=10)
+        count += 1
+    
+    print(count)
+    print(f"{problem.state.evaluations}")
+    print(f"current best after using whole budget {problem.state.current_best} with fitness {problem.state.current_best.y}")
     return problem.state.current_best
     # no return value needed 
 
@@ -142,9 +129,9 @@ if __name__ == "__main__":
         F18.reset() # it is necessary to reset the problem after each independent run
     _logger.close() # after all runs, it is necessary to close the logger to make sure all data are written to the folder
 
-    # F19, _logger = create_problem(19)
-    # for run in range(20): 
-    #     print('f19')
-    #     studentnumber1_studentnumber2_GA(F19)
-    #     F19.reset()
-    # _logger.close()
+    F19, _logger = create_problem(19)
+    for run in range(20): 
+        print('f19')
+        studentnumber1_studentnumber2_GA(F19)
+        F19.reset()
+    _logger.close()
