@@ -24,11 +24,48 @@ dimension = 50
 
 # To make your results reproducible (not required by the assignment), you could set the random seed by
 # `np.random.seed(some integer, e.g., 42)`
+np.random.seed(42)
+
+def sigmoid(x):
+    return 1 / (1 + np.exp(-x))
+
+def array_to_bitstring(array):
+    # Apply the sigmoid function to each element in the array
+    sigmoid_values = sigmoid(array)
+    
+    # Map sigmoid values to binary (0 or 1)
+    bitstring = np.round(sigmoid_values).astype(int)
+    
+    return bitstring
+
+
+def initialization(mu, dimension, lowerbound=-5.0, upperbound=5.0):
+    parent = []
+    parent_sigma = []
+
+    for i in range(mu):
+        individual = np.random.uniform(low=lowerbound, high=upperbound, size=dimension)
+        # Convert the real-valued array to a bitstring using sigmoid
+        bitstring = array_to_bitstring(individual)
+        parent.append(bitstring)
+        parent_sigma.append(0.05 * (upperbound - lowerbound))
+
+    return parent, parent_sigma
 
 def studentnumber1_studentnumber2_ES(problem):
     # hint: F18 and F19 are Boolean problems. Consider how to present bitstrings as real-valued vectors in ES
     # initial_pop = ... make sure you randomly create the first population
+    mu_ = 5  # population size
+    lambda_ = 10  # offspring size
+    tau = 1.0 / np.sqrt(problem.meta_data.n_variables)  # step size adjustment parameter
 
+    # Initialize population and strategy parameters
+    parent, parent_sigma = initialization(mu_, problem.meta_data.n_variables)
+    print(f"parent {parent}")
+    print(f"parent_sigma {parent_sigma}")
+    parent = [ind.tolist() for ind in parent]
+    print(f"list parent {parent}")
+ 
     # `problem.state.evaluations` counts the number of function evaluation automatically,
     # which is incremented by 1 whenever you call `problem(x)`.
     # You could also maintain a counter of function evaluations if you prefer.
@@ -37,6 +74,10 @@ def studentnumber1_studentnumber2_ES(problem):
         # .....
         # this is how you evaluate one solution `x`
         # f = problem(x)
+        # Evaluate parent solutions
+        parent_f = [problem(x) for x in parent]
+        print(f"parent_f {parent_f}")
+        break
         pass
         
     # no return value needed 
@@ -64,12 +105,14 @@ if __name__ == "__main__":
     # this how you run your algorithm with 20 repetitions/independent run
     F18, _logger = create_problem(18)
     for run in range(20): 
+        print("F18")
         studentnumber1_studentnumber2_ES(F18)
         F18.reset() # it is necessary to reset the problem after each independent run
     _logger.close() # after all runs, it is necessary to close the logger to make sure all data are written to the folder
 
     F19, _logger = create_problem(19)
     for run in range(20): 
+        print("F19")
         studentnumber1_studentnumber2_ES(F19)
         F19.reset()
     _logger.close()
