@@ -14,28 +14,18 @@ Task 2: Evolution Strategy
 """
 
 import numpy as np
-# you need to install this package `ioh`. Please see documentations here: 
-# https://iohprofiler.github.io/IOHexp/ and
-# https://pypi.org/project/ioh/
 from ioh import get_problem, logger, ProblemClass
 
 budget = 5000
 dimension = 50
-
-# To make your results reproducible (not required by the assignment), you could set the random seed by
-# `np.random.seed(some integer, e.g., 42)`
 np.random.seed(42)
 
 def sigmoid(x):
     return 1 / (1 + np.exp(-x))
 
 def array_to_bitstring(array):
-    # Apply the sigmoid function to each element in the array
     sigmoid_values = sigmoid(array)
-    
-    # Map sigmoid values to binary (0 or 1)
     bitstring = np.round(sigmoid_values).astype(int)
-    
     return bitstring
 
 
@@ -45,7 +35,6 @@ def initialization(mu, dimension, lowerbound=-5.0, upperbound=5.0):
 
     for i in range(mu):
         individual = np.random.uniform(low=lowerbound, high=upperbound, size=dimension)
-        # Convert the real-valued array to a bitstring using sigmoid
         bitstring = array_to_bitstring(individual)
         parent.append(bitstring)
         parent_sigma.append(0.05 * (upperbound - lowerbound))
@@ -70,18 +59,9 @@ def studentnumber1_studentnumber2_ES(problem):
     # which is incremented by 1 whenever you call `problem(x)`.
     # You could also maintain a counter of function evaluations if you prefer.
     while problem.state.evaluations < budget:
-        # please implement the mutation, crossover, selection here
-        # .....
-        # this is how you evaluate one solution `x`
-        # f = problem(x)
-        # Evaluate parent solutions
         parent_f = [problem(x) for x in parent]
         print(f"parent_f {parent_f}")
         break
-        pass
-        
-    # no return value needed 
-
 
 def create_problem(fid: int):
     # Declaration of problems to be tested.
