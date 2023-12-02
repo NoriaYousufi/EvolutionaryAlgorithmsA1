@@ -44,7 +44,6 @@ def k_point_crossover(population, problem, population_size):
         crossover_pop += [child1, child2]
     return crossover_pop
 
-# TODO check mutation
 # Bitflip mutation
 def bitflip_mutation(crossover_pop, problem, mutation_rate=0.1):
     mutated_pop = []
@@ -56,7 +55,7 @@ def bitflip_mutation(crossover_pop, problem, mutation_rate=0.1):
     return mutated_pop
 
 # Tournament selection
-def trounament_selection(pop_sorted, problem, tournament_size):
+def tournament_selection(pop_sorted, problem, tournament_size):
     selected_parents = []
     for _ in range(len(pop_sorted)):
         tournament_candidates = random.sample(pop_sorted, tournament_size)
@@ -78,29 +77,20 @@ def studentnumber1_studentnumber2_GA(problem):
     # `problem.state.evaluations` counts the number of function evaluation automatically,
     # which is incremented by 1 whenever you call `problem(x)`.
     # You could also maintain a counter of function evaluations if you prefer.
-    count = 0
-    while problem.state.evaluations < budget:
-        # please implement the mutation, crossover, selection here
-        # .....
-        # this is how you evaluate one solution `x`
-        # f = problem(x)
+    generation = 0
+    while problem.state.evaluations < budget:  # TODO: Check if equal to optimum
         # Crossover
         crossover_pop = k_point_crossover(offspring_pop_sorted, problem, population_size)
         # Mutation
         mutation_pop = bitflip_mutation(crossover_pop, problem)
-
         # Selection
         # Sort the population based on the calculated fitness values in descending order
         pop_sorted = sorted(mutation_pop, key=lambda i: problem(i), reverse=True)
-
-        offspring_pop_sorted = trounament_selection(pop_sorted, problem, tournament_size=10)
-        count += 1
-    
-    print(count)
+        offspring_pop_sorted = tournament_selection(pop_sorted, problem, tournament_size=10)
+        generation += 1
+    print(generation)
     print(f"{problem.state.evaluations}")
     print(f"current best after using whole budget {problem.state.current_best} with fitness {problem.state.current_best.y}")
-    return problem.state.current_best
-    # no return value needed 
 
 
 def create_problem(fid: int):
