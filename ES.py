@@ -52,6 +52,16 @@ def initialization(mu, dimension, lowerbound=-5.0, upperbound=5.0):
 
     return parent, parent_sigma
 
+def recombination(parent, parent_sigma):
+    p1, p2 = np.random.choice(len(parent), 2, replace=False)
+    print(f"p1 {p1}")
+    print(f"p2 {p2}")
+    pass
+    # offspring = (parent[p1] + parent[p2]) / 2
+    # sigma = (parent_sigma[p1] + parent_sigma[p2]) / 2
+
+    # return offspring, sigma
+
 def studentnumber1_studentnumber2_ES(problem):
     # hint: F18 and F19 are Boolean problems. Consider how to present bitstrings as real-valued vectors in ES
     # initial_pop = ... make sure you randomly create the first population
@@ -77,6 +87,19 @@ def studentnumber1_studentnumber2_ES(problem):
         # Evaluate parent solutions
         parent_f = [problem(x) for x in parent]
         print(f"parent_f {parent_f}")
+
+        # Recombination 
+        offspring = []
+        offspring_sigma = []
+        offspring_f = []
+
+        for i in range(lambda_):
+            o, s = recombination(parent, parent_sigma)
+            offspring.append(o)
+            offspring_sigma.append(s)
+
+        print(f"Offspring {offspring}")
+        print(f"offsprong sigma {offspring_sigma}")
         break
         pass
         
