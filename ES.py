@@ -116,36 +116,41 @@ def studentnumber1_studentnumber2_ES(problem):
         population = select(mutated_offspring, f_offspring, mu_, problem)
         generation += 1
 
-def create_problem(fid: int):
-    # Declaration of problems to be tested.
-    problem = get_problem(fid, dimension=dimension, instance=1, problem_class=ProblemClass.PBO)
+    print(f"Found {problem.state.current_best} : {problem.state.current_best.y} in {generation} generations")
 
-    # Create default logger compatible with IOHanalyzer
-    # `root` indicates where the output files are stored.
-    # `folder_name` is the name of the folder containing all output. You should compress the folder 'run' and upload it to IOHanalyzer.
+def create_problem(fid: int):
+    problem = get_problem(fid, dimension=dimension, instance=1, problem_class=ProblemClass.PBO)
     l = logger.Analyzer(
         root="data",  # the working directory in which a folder named `folder_name` (the next argument) will be created to store data
         folder_name="run",  # the folder name to which the raw performance data will be stored
         algorithm_name="genetic_algorithm",  # name of your algorithm
         algorithm_info="Practical assignment of the EA course",
     )
-    # attach the logger to the problem
     problem.attach_logger(l)
     return problem, l
 
 
 if __name__ == "__main__":
+    TESTING = True
     # this how you run your algorithm with 20 repetitions/independent run
-    F18, _logger = create_problem(18)
-    for run in range(20): 
-        print("F18")
-        studentnumber1_studentnumber2_ES(F18)
-        F18.reset() # it is necessary to reset the problem after each independent run
-    _logger.close() # after all runs, it is necessary to close the logger to make sure all data are written to the folder
+    if not TESTING:
+        F18, _logger = create_problem(18)
+        for run in range(20): 
+            print("F18")
+            studentnumber1_studentnumber2_ES(F18)
+            F18.reset() # it is necessary to reset the problem after each independent run
+        _logger.close() # after all runs, it is necessary to close the logger to make sure all data are written to the folder
 
-    F19, _logger = create_problem(19)
-    for run in range(20): 
+        F19, _logger = create_problem(19)
+        for run in range(20): 
+            print("F19")
+            studentnumber1_studentnumber2_ES(F19)
+            F19.reset()
+        _logger.close()
+    else:
+        print("F18")
+        F18, _ = create_problem(18)
+        studentnumber1_studentnumber2_ES(F18)
         print("F19")
+        F19, _ = create_problem(19)
         studentnumber1_studentnumber2_ES(F19)
-        F19.reset()
-    _logger.close()
