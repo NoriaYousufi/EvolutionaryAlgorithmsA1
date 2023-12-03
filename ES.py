@@ -14,6 +14,7 @@ Task 2: Evolution Strategy
 """
 
 import numpy as np
+import random
 from ioh import get_problem, logger, ProblemClass
 
 budget = 5000
@@ -29,62 +30,91 @@ def array_to_bitstring(array):
     return bitstring
 
 
-def initialization(mu, dimension, lowerbound=-5.0, upperbound=5.0):
-    parent = []
-    parent_sigma = []
+# def initialization(mu, dimension, lowerbound=-5.0, upperbound=5.0):
+#     parent = []
+#     parent_sigma = []
 
-    for i in range(mu):
-        individual = np.random.uniform(low=lowerbound, high=upperbound, size=dimension)
-        bitstring = array_to_bitstring(individual)
-        parent.append(bitstring)
-        parent_sigma.append(0.05 * (upperbound - lowerbound))
+#     for i in range(mu):
+#         individual = np.random.uniform(low=lowerbound, high=upperbound, size=dimension)
+#         bitstring = array_to_bitstring(individual)
+#         parent.append(bitstring)
+#         parent_sigma.append(0.05 * (upperbound - lowerbound))
 
-    return parent, parent_sigma
+#     return parent, parent_sigma
 
-def recombination(parent, parent_sigma):
-    p1, p2 = np.random.choice(len(parent), 2, replace=False)
-    print(f"p1 {p1}")
-    print(f"p2 {p2}")
+# def recombination(parent, parent_sigma):
+#     p1, p2 = np.random.choice(len(parent), 2, replace=False)
+#     print(f"p1 {p1}")
+#     print(f"p2 {p2}")
+#     pass
+#     # offspring = (parent[p1] + parent[p2]) / 2
+#     # sigma = (parent_sigma[p1] + parent_sigma[p2]) / 2
+
+#     # return offspring, sigma
+
+def initialization(problem, n_individuals):
+
+    population, mutation_rates = list(), list()
+
+    for individual in range(n_individuals):
+        indiv = np.random.uniform(low = -1, high = 1, size = problem.meta_data.n_variables)
+        population.append(array_to_bitstring(indiv))
+
+    for param in range(problem.meta_data.n_variables):
+        mutation_rates.append(0.05)  # TODO: mutation rate initialization?
+
+    return population, mutation_rates
+
+def discrete_recombination(r1, r2, problem):
+    individual = np.full((50), -1)
+    for var in range(problem.meta_data.n_variables):
+        individual[[var]] = random.choice([r1[var], r2[var]])
+    return individual.tolist()
+
+def recombine(population, n_offspring, problem):
+
+    offspring = list()
+
+    for i in range(n_offspring):
+        r1 = random.choice(population)
+        r2 = random.choice(population)
+        if r1 == r2:
+            i = 0
+            while r1 == r2:
+                r2 = random.choice(population)
+                i += 1
+                if i > 2000:
+                    exit(1)
+        offspring.append(discrete_recombination(r1, r2, problem))
+    return offspring
+
+def adept_step_size(sigma, global_tau, tau, problem):
     pass
-    # offspring = (parent[p1] + parent[p2]) / 2
-    # sigma = (parent_sigma[p1] + parent_sigma[p2]) / 2
 
-    # return offspring, sigma
+def mutate(offspring, sigma, problem):
+    pass
+
+def select(offspring, f_offspring, n_offspring, problem):
+    pass
+
 
 def studentnumber1_studentnumber2_ES(problem):
-    # hint: F18 and F19 are Boolean problems. Consider how to present bitstrings as real-valued vectors in ES
-    # initial_pop = ... make sure you randomly create the first population
     mu_ = 5  # population size
     lambda_ = 10  # offspring size
-    tau = 1.0 / np.sqrt(problem.meta_data.n_variables)  # step size adjustment parameter
+    global_tau = 1.0 / np.sqrt(2 * problem.meta_data.n_variables)
+    tau = 1.0 / np.sqrt(2 * np.sqrt(problem.meta_data.n_variables))
+    generation = 0
 
-    # Initialize population and strategy parameters
-    parent, parent_sigma = initialization(mu_, problem.meta_data.n_variables)
-    print(f"parent {parent}")
-    print(f"parent_sigma {parent_sigma}")
-    parent = [ind.tolist() for ind in parent]
-    print(f"list parent {parent}")
+    population, sigma = initialization(problem, mu_)
+    f_population = [problem(x) for x in population]
  
-    # `problem.state.evaluations` counts the number of function evaluation automatically,
-    # which is incremented by 1 whenever you call `problem(x)`.
-    # You could also maintain a counter of function evaluations if you prefer.
     while problem.state.evaluations < budget:
-        parent_f = [problem(x) for x in parent]
-        print(f"parent_f {parent_f}")
-
-        # Recombination 
-        offspring = []
-        offspring_sigma = []
-        offspring_f = []
-
-        for i in range(lambda_):
-            o, s = recombination(parent, parent_sigma)
-            offspring.append(o)
-            offspring_sigma.append(s)
-
-        print(f"Offspring {offspring}")
-        print(f"offsprong sigma {offspring_sigma}")
-        break
+        offspring = recombine(population, lambda_, problem)
+        sigma = adept_step_size(sigma, global_tau, tau, problem)
+        mutated_offspring = mutate(offspring, sigma, problem)
+        f_offspring = [problem(x) for x in mutated_offspring]
+        population = select(mutated_offspring, f_offspring, mu_, problem)
+        generation += 1
 
 def create_problem(fid: int):
     # Declaration of problems to be tested.
@@ -119,5 +149,3 @@ if __name__ == "__main__":
         studentnumber1_studentnumber2_ES(F19)
         F19.reset()
     _logger.close()
-
-
