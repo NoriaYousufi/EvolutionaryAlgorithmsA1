@@ -29,29 +29,6 @@ def array_to_bitstring(array):
     bitstring = np.round(sigmoid_values).astype(int)
     return bitstring
 
-
-# def initialization(mu, dimension, lowerbound=-5.0, upperbound=5.0):
-#     parent = []
-#     parent_sigma = []
-
-#     for i in range(mu):
-#         individual = np.random.uniform(low=lowerbound, high=upperbound, size=dimension)
-#         bitstring = array_to_bitstring(individual)
-#         parent.append(bitstring)
-#         parent_sigma.append(0.05 * (upperbound - lowerbound))
-
-#     return parent, parent_sigma
-
-# def recombination(parent, parent_sigma):
-#     p1, p2 = np.random.choice(len(parent), 2, replace=False)
-#     print(f"p1 {p1}")
-#     print(f"p2 {p2}")
-#     pass
-#     # offspring = (parent[p1] + parent[p2]) / 2
-#     # sigma = (parent_sigma[p1] + parent_sigma[p2]) / 2
-
-#     # return offspring, sigma
-
 def initialization(problem, n_individuals):
 
     population, mutation_rates = list(), list()
@@ -78,24 +55,25 @@ def recombine(population, n_offspring, problem):
     for i in range(n_offspring):
         r1 = random.choice(population)
         r2 = random.choice(population)
-        if r1 == r2:
+        if np.array_equal(r1, r2):
             i = 0
-            while r1 == r2:
+            while np.array_equal(r1, r2):
                 r2 = random.choice(population)
                 i += 1
                 if i > 2000:
+                    print("Too many duplicates")
                     exit(1)
         offspring.append(discrete_recombination(r1, r2, problem))
     return offspring
 
 def adept_step_size(sigma, global_tau, tau, problem):
-    pass
+    return sigma
 
 def mutate(offspring, sigma, problem):
-    pass
+    return offspring
 
-def select(offspring, f_offspring, n_offspring, problem):
-    pass
+def select(offspring, f_offspring, n_individuals, problem):
+    return offspring[:n_individuals]
 
 
 def studentnumber1_studentnumber2_ES(problem):
@@ -147,7 +125,7 @@ if __name__ == "__main__":
             studentnumber1_studentnumber2_ES(F19)
             F19.reset()
         _logger.close()
-    else:
+    elif TESTING:
         print("F18")
         F18, _ = create_problem(18)
         studentnumber1_studentnumber2_ES(F18)
