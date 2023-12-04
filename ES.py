@@ -53,16 +53,12 @@ def recombine(population, n_offspring, problem):
     offspring = list()
 
     for i in range(n_offspring):
-        r1 = random.choice(population)
-        r2 = random.choice(population)
-        if np.array_equal(r1, r2):
-            i = 0
-            while np.array_equal(r1, r2):
-                r2 = random.choice(population)
-                i += 1
-                if i > 2000:
-                    print("Too many duplicates")
-                    exit(1)
+        idx_r1 = int(np.random.uniform(low=0, high=len(population)))
+        idx_r2 = idx_r1
+        while idx_r1 == idx_r2:
+            idx_r2 = int(np.random.uniform(low=0, high=len(population)))
+        r1 = population[idx_r1]
+        r2 = population[idx_r2]
         offspring.append(discrete_recombination(r1, r2, problem))
     return offspring
 
