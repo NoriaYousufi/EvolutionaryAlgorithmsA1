@@ -14,7 +14,6 @@ Task 2: Evolution Strategy
 """
 
 import numpy as np
-import random
 from ioh import get_problem, logger, ProblemClass
 
 budget = 5000
@@ -25,8 +24,10 @@ def sigmoid(x):
     return 1 / (1 + np.exp(-x))
 
 def array_to_bitstring(array):
+
     sigmoid_values = sigmoid(array)
     bitstring = np.round(sigmoid_values).astype(int)
+
     return bitstring
 
 def initialization(problem, n_individuals):
@@ -34,7 +35,7 @@ def initialization(problem, n_individuals):
     population, mutation_rates = list(), list()
 
     for individual in range(n_individuals):
-        indiv = np.random.uniform(low = -1, high = 1, size = problem.meta_data.n_variables)
+        indiv = random_generator.uniform(size = problem.meta_data.n_variables, low = -1, high = 1)
         population.append(array_to_bitstring(indiv))
 
     for param in range(problem.meta_data.n_variables):
@@ -43,36 +44,59 @@ def initialization(problem, n_individuals):
     return population, mutation_rates
 
 def discrete_recombination(r1, r2, problem):
+
     individual = np.full((50), -1)
-    for var in range(problem.meta_data.n_variables):
-        individual[[var]] = random.choice([r1[var], r2[var]])
+
+    for idx in range(problem.meta_data.n_variables):
+        individual[[idx]] = np.random.choice([r1[idx], r2[idx]])
+
     return individual.tolist()
 
 def recombine(population, n_offspring, problem):
 
     offspring = list()
-
     for i in range(n_offspring):
-        idx_r1 = int(np.random.uniform(low=0, high=len(population)))
+        idx_r1 = random_generator.integers(low = 0, high = len(population))
         idx_r2 = idx_r1
         while idx_r1 == idx_r2:
-            idx_r2 = int(np.random.uniform(low=0, high=len(population)))
+            idx_r2 = random_generator.integers(low = 0, high = len(population))
         r1 = population[idx_r1]
         r2 = population[idx_r2]
         offspring.append(discrete_recombination(r1, r2, problem))
+
     return offspring
 
 def adept_step_size(sigma, global_tau, tau, problem):
-    return sigma
+
+    g = random_generator.normal(0, 1)
+    sigma_prime = np.full((50), 0)
+
+    for idx in range(problem.meta_data.n_variables):
+        sigma_prime[idx] = sigma[idx] * np.exp(global_tau * g + tau * random_generator.normal(0, 1))
+
+    return sigma_prime
 
 def mutate(offspring, sigma, problem):
+
+    offspring_prime = list()
+
+    for idx in range(len(offspring)):
+        offspring_prime.append(offspring[idx] + sigma * random_generator.normal(0, 1, size = problem.meta_data.n_variables))
+
     return offspring
 
 def select(offspring, f_offspring, n_individuals, problem):
-    return offspring[:n_individuals]
+
+    f_offspring_mapping = {tuple(offspring[idx]) : f_offspring[idx] for idx in range(len(offspring))}
+    sorted_offspring = sorted(offspring, key=lambda x: f_offspring_mapping[tuple(x)], reverse=True)
+
+    return sorted_offspring[:n_individuals]
 
 
 def studentnumber1_studentnumber2_ES(problem):
+
+    global random_generator; random_generator = np.random.default_rng()
+
     mu_ = 5  # population size
     lambda_ = 10  # offspring size
     global_tau = 1.0 / np.sqrt(2 * problem.meta_data.n_variables)
@@ -93,6 +117,7 @@ def studentnumber1_studentnumber2_ES(problem):
     print(f"Found {problem.state.current_best} : {problem.state.current_best.y} in {generation} generations")
 
 def create_problem(fid: int):
+
     problem = get_problem(fid, dimension=dimension, instance=1, problem_class=ProblemClass.PBO)
     l = logger.Analyzer(
         root="data",  # the working directory in which a folder named `folder_name` (the next argument) will be created to store data
@@ -101,6 +126,7 @@ def create_problem(fid: int):
         algorithm_info="Practical assignment of the EA course",
     )
     problem.attach_logger(l)
+
     return problem, l
 
 
