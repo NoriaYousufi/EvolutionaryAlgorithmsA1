@@ -3,6 +3,7 @@ from ioh import get_problem, logger, ProblemClass
 
 
 def sigmoid(x):
+
     return 1 / (1 + np.exp(-x))
 
 def array_to_bitstring(array):
@@ -21,7 +22,7 @@ def initialization(problem, n_individuals):
         population.append(array_to_bitstring(indiv))
 
     for param in range(problem.meta_data.n_variables):
-        mutation_rates.append(random_generator.random())
+        mutation_rates.append(random_generator.random())  # TODO: Tune?
 
     return population, mutation_rates
 
@@ -74,17 +75,16 @@ def select(offspring, f_offspring, n_individuals, problem):
 
     return [array_to_bitstring(np.array(x)) for x in sorted_offspring[:n_individuals]]
 
-
 def studentnumber1_studentnumber2_ES(problem):
 
-    mu_ = 5  # population size
-    lambda_ = 7 * mu_  # offspring size
+    mu_ = 5  # TODO: Tune?
+    lambda_ = 7 * mu_  # TODO: Tune?
+
     global_tau = 1.0 / np.sqrt(2 * problem.meta_data.n_variables)
     tau = 1.0 / np.sqrt(2 * np.sqrt(problem.meta_data.n_variables))
-    generation = 0
 
     population, sigma = initialization(problem, mu_)
-    f_population = [problem(x) for x in population]
+    generation = 0
  
     while problem.state.evaluations < BUDGET:
         offspring = recombine(population, lambda_, problem)
@@ -108,7 +108,6 @@ def create_problem(fid: int):
     problem.attach_logger(l)
 
     return problem, l
-
 
 if __name__ == "__main__":
 

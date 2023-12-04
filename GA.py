@@ -3,7 +3,6 @@ from ioh import get_problem, logger, ProblemClass
 import random
 
 
-# 1-point crossover
 def one_point_crossover(population, problem, population_size):
 
     crossover_pop = []
@@ -51,15 +50,11 @@ def studentnumber1_studentnumber2_GA(problem):
 
     population_size = 20
     population = [random_generator.integers(low = 0, high = 2, size = problem.meta_data.n_variables).tolist() for _ in range(population_size)]
-    # population = [np.random.randint(0, 2, problem.meta_data.n_variables).tolist() for _ in range(population_size)]
     generation = 0
 
     while problem.state.evaluations < BUDGET:
-        # Crossover
         crossover_pop = one_point_crossover(population, problem, population_size)
-        # Mutation
         mutation_pop = bitflip_mutation(crossover_pop, problem)
-        # Selection
         f_pop = [problem(x) for x in mutation_pop]
         population = tournament_selection(mutation_pop, f_pop, problem, tournament_size=10)
         generation += 1
