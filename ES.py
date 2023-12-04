@@ -16,9 +16,6 @@ Task 2: Evolution Strategy
 import numpy as np
 from ioh import get_problem, logger, ProblemClass
 
-budget = 5000
-dimension = 50
-np.random.seed(42)
 
 def sigmoid(x):
     return 1 / (1 + np.exp(-x))
@@ -90,12 +87,10 @@ def select(offspring, f_offspring, n_individuals, problem):
     f_offspring_mapping = {tuple(offspring[idx]) : f_offspring[idx] for idx in range(len(offspring))}
     sorted_offspring = sorted(offspring, key=lambda x: f_offspring_mapping[tuple(x)], reverse=True)
 
-    return sorted_offspring[:n_individuals]
+    return [array_to_bitstring(np.array(x)) for x in sorted_offspring[:n_individuals]]
 
 
 def studentnumber1_studentnumber2_ES(problem):
-
-    global random_generator; random_generator = np.random.default_rng()
 
     mu_ = 5  # population size
     lambda_ = 10  # offspring size
@@ -106,19 +101,19 @@ def studentnumber1_studentnumber2_ES(problem):
     population, sigma = initialization(problem, mu_)
     f_population = [problem(x) for x in population]
  
-    while problem.state.evaluations < budget:
+    while problem.state.evaluations < BUDGET:
         offspring = recombine(population, lambda_, problem)
         sigma = adept_step_size(sigma, global_tau, tau, problem)
         mutated_offspring = mutate(offspring, sigma, problem)
-        f_offspring = [problem(x) for x in mutated_offspring]
+        f_offspring = [problem(array_to_bitstring(np.array(x))) for x in mutated_offspring]
         population = select(mutated_offspring, f_offspring, mu_, problem)
         generation += 1
 
-    print(f"Found {problem.state.current_best} : {problem.state.current_best.y} in {generation} generations")
+    print(f"Problem {problem.meta_data.name} yielded an objective value of {problem.state.current_best.y} in {generation} generations.")
 
 def create_problem(fid: int):
 
-    problem = get_problem(fid, dimension=dimension, instance=1, problem_class=ProblemClass.PBO)
+    problem = get_problem(fid, dimension = DIMENSION, instance=1, problem_class=ProblemClass.PBO)
     l = logger.Analyzer(
         root="data",  # the working directory in which a folder named `folder_name` (the next argument) will be created to store data
         folder_name="run",  # the folder name to which the raw performance data will be stored
@@ -131,26 +126,29 @@ def create_problem(fid: int):
 
 
 if __name__ == "__main__":
+
+    BUDGET = 5000
+    DIMENSION = 50
+
+    np.random.seed(42)
+    random_generator = np.random.default_rng()
+
     TESTING = True
-    # this how you run your algorithm with 20 repetitions/independent run
     if not TESTING:
         F18, _logger = create_problem(18)
         for run in range(20): 
-            print("F18")
             studentnumber1_studentnumber2_ES(F18)
-            F18.reset() # it is necessary to reset the problem after each independent run
-        _logger.close() # after all runs, it is necessary to close the logger to make sure all data are written to the folder
+            F18.reset()
+        _logger.close()
 
         F19, _logger = create_problem(19)
         for run in range(20): 
-            print("F19")
             studentnumber1_studentnumber2_ES(F19)
             F19.reset()
         _logger.close()
+
     elif TESTING:
-        print("F18")
         F18, _ = create_problem(18)
         studentnumber1_studentnumber2_ES(F18)
-        print("F19")
         F19, _ = create_problem(19)
         studentnumber1_studentnumber2_ES(F19)
