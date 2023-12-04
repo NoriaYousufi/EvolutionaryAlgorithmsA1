@@ -14,38 +14,36 @@ Some hints:
 
 import numpy as np
 import random
-# you need to install this package `ioh`. Please see documentations here: 
-# https://iohprofiler.github.io/IOHexp/ and
-# https://pypi.org/project/ioh/
 from ioh import get_problem, logger, ProblemClass
 
 budget = 5000
 dimension = 50
-
-# To make your results reproducible (not required by the assignment), you could set the random seed by
-# `np.random.seed(some integer, e.g., 42)`
 np.random.seed(42)
 
 
-# k-point crossover
-def k_point_crossover(population, problem, population_size):
+# 1-point crossover
+def one_point_crossover(population, problem, population_size):
+
     crossover_pop = []
-    crossover_points = 4
-    # TODO check is the first for loop is correct
-    for _ in range(int(population_size/2)):#offspring size can not exceet original population size?
-        parent1 = random.choice(population)
-        parent2 = random.choice(population)
-        for _ in range(crossover_points):
-            point = random.randint(1, problem.meta_data.n_variables-1)
-            child1 = parent1[:point] + parent2[point:]
-            child2 = parent2[:point] + parent1[point:]
-            parent1 = child1
-            parent2 = child2
-        crossover_pop += [child1, child2]
+    random_generator = np.random.default_rng()
+
+    while len(crossover_pop) < population_size:
+        p1_idx = random_generator.integers(low = 0, high = len(population))
+        p2_idx = random_generator.integers(low = 0, high = len(population))
+        while p1_idx == p2_idx:
+            p2_idx = random_generator.integers(low = 0, high = len(population))
+        parent1 = population[p1_idx]
+        parent2 = population[p2_idx]
+
+        crossover_idx = random_generator.integers(low = 1, high = problem.meta_data.n_variables)
+        child1 = parent1[:crossover_idx] + parent2[crossover_idx:]
+        child2 = parent2[:crossover_idx] + parent1[crossover_idx:]
+        crossover_pop.extend([child1, child2])
+
     return crossover_pop
 
 # Bitflip mutation
-def bitflip_mutation(crossover_pop, problem, mutation_rate=0.1):
+def bitflip_mutation(crossover_pop, problem, mutation_rate=0.01):  # TODO: mutation rate used to be 0.1, might be a bit high
     mutated_pop = []
     for i in range(len(crossover_pop)):
         for j in range(len(crossover_pop[i])):
@@ -54,39 +52,57 @@ def bitflip_mutation(crossover_pop, problem, mutation_rate=0.1):
         mutated_pop.append(crossover_pop[i])
     return mutated_pop
 
+def adaptive_bitflip(crossover_pop, problem, mutation_rate = 0.01, mutation_decrease = 0.005):
+    mutated_offspring = list()
+    evaluated_offspring = tuple([problem(x), x] for x in crossover_pop)
+    sorted_offspring = sorted(evaluated_offspring, reverse=True)
+    for fitness, individual in sorted_offspring:
+        mutation_rate = mutation_rate - mutation_decrease
+        child = individual
+        for j, gene in enumerate(individual):
+            if random.random() <= mutation_rate:
+                # flip
+                if gene == 1:
+                    child[j] = 0
+                elif gene == 0:
+                    child[j] = 1
+        mutated_offspring.append(child)
+
+    return mutated_offspring
+
 # Tournament selection
-def tournament_selection(pop_sorted, problem, tournament_size):
+def tournament_selection(pop, f_pop, problem, tournament_size):
     selected_parents = []
-    for _ in range(len(pop_sorted)):
-        tournament_candidates = random.sample(pop_sorted, tournament_size)
-        best_candidate = sorted(tournament_candidates, key=lambda ind: problem(ind), reverse=True)[0]
-        selected_parents.append(best_candidate)
+    tournament_candidates = list(zip(pop, f_pop))
+    for _ in range(len(pop)):
+        tournament_candidates = random.sample(tournament_candidates, tournament_size)
+        best_candidate = sorted(tournament_candidates, key=lambda ind: ind[-1], reverse=True)[0]
+        selected_parents.append(best_candidate[0])
     return selected_parents
 
 def studentnumber1_studentnumber2_GA(problem):
-    # initial_pop = ... make sure you randomly create the first population
     population_size = 20
-    max_dim = problem.meta_data.n_variables
 
-    # Initialize random populations
-    initial_pop = [np.random.randint(0, 2, max_dim).tolist() for _ in range(population_size)]
+    # Initialize random population
+    initial_pop = [np.random.randint(0, 2, problem.meta_data.n_variables).tolist() for _ in range(population_size)]
 
     # Sort the population based on the calculated fitness values in descending order
-    offspring_pop_sorted = sorted(initial_pop, key=lambda i: problem(i), reverse=True)
-
-    # `problem.state.evaluations` counts the number of function evaluation automatically,
-    # which is incremented by 1 whenever you call `problem(x)`.
-    # You could also maintain a counter of function evaluations if you prefer.
+    # offspring_pop_sorted = sorted(initial_pop, key=lambda i: problem(i), reverse=True)
+    offspring_pop_sorted = initial_pop
     generation = 0
-    while problem.state.evaluations < budget:  # TODO: Check if equal to optimum
+
+    while problem.state.evaluations < budget:
         # Crossover
-        crossover_pop = k_point_crossover(offspring_pop_sorted, problem, population_size)
+        crossover_pop = one_point_crossover(offspring_pop_sorted, problem, population_size)
         # Mutation
         mutation_pop = bitflip_mutation(crossover_pop, problem)
+        # mutation_pop = adaptive_bitflip(crossover_pop, problem)
         # Selection
         # Sort the population based on the calculated fitness values in descending order
-        pop_sorted = sorted(mutation_pop, key=lambda i: problem(i), reverse=True)
-        offspring_pop_sorted = tournament_selection(pop_sorted, problem, tournament_size=10)
+        f_pop = [problem(x) for x in mutation_pop]
+        # pop_sorted = sorted(mutation_pop, key=lambda i: problem(i), reverse=True)
+        offspring_pop_sorted = tournament_selection(mutation_pop, f_pop, problem, tournament_size=10)
+        assert len(offspring_pop_sorted) == population_size
         generation += 1
     print(generation)
     print(f"{problem.state.evaluations}")
