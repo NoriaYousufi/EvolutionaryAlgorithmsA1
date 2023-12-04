@@ -93,7 +93,7 @@ def select(offspring, f_offspring, n_individuals, problem):
 def studentnumber1_studentnumber2_ES(problem):
 
     mu_ = 5  # population size
-    lambda_ = 10  # offspring size
+    lambda_ = 7 * mu_  # offspring size
     global_tau = 1.0 / np.sqrt(2 * problem.meta_data.n_variables)
     tau = 1.0 / np.sqrt(2 * np.sqrt(problem.meta_data.n_variables))
     generation = 0
@@ -109,7 +109,7 @@ def studentnumber1_studentnumber2_ES(problem):
         population = select(mutated_offspring, f_offspring, mu_, problem)
         generation += 1
 
-    print(f"Problem {problem.meta_data.name} yielded an objective value of {problem.state.current_best.y} in {generation} generations.")
+    print(f"Problem: {problem.meta_data.name}. Found an objective value of {problem.state.current_best.y} in {generation} generations.")
 
 def create_problem(fid: int):
 
