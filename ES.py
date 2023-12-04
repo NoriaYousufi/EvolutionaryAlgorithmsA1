@@ -1,123 +1,131 @@
-"""
-Requirements
-- Implement a genetic algorithm solving the F18 and F19 problems
-- Implement an evolution strategy solving the F18 and F19 problems
-- Submit at least two files 'studentnumber1_studentnumber2_GA.py' and 'studentnumber1_studentnumber2_ES.py'.
-- Additional files of other functions are allowed. Please make sure we can get results by running 'python *_GA.py' and 'python *_ES.py' without additional arguments.
-- Submit a report introducing your algorithms and presenting the experimental results. 
-
-Task 2: Evolution Strategy
-- How to handle the representation of binary/discrete variables while applying evolution strategies?
-- What encoding and decoding methods will you use?
-- Which variators (e.g., one-� mutation, correlated mutation, discrete recombination, etc) and selectionmoperators will you use?
-- What’s your suggestion for the parameter settings (e.g., population size, step size, etc.)?
-"""
-
 import numpy as np
 from ioh import get_problem, logger, ProblemClass
 
-budget = 5000
-dimension = 50
-np.random.seed(42)
 
 def sigmoid(x):
     return 1 / (1 + np.exp(-x))
 
 def array_to_bitstring(array):
+
     sigmoid_values = sigmoid(array)
     bitstring = np.round(sigmoid_values).astype(int)
+
     return bitstring
 
+def initialization(problem, n_individuals):
 
-def initialization(mu, dimension, lowerbound=-5.0, upperbound=5.0):
-    parent = []
-    parent_sigma = []
+    population, mutation_rates = list(), list()
 
-    for i in range(mu):
-        individual = np.random.uniform(low=lowerbound, high=upperbound, size=dimension)
-        bitstring = array_to_bitstring(individual)
-        parent.append(bitstring)
-        parent_sigma.append(0.05 * (upperbound - lowerbound))
+    for individual in range(n_individuals):
+        indiv = random_generator.uniform(size = problem.meta_data.n_variables, low = -1, high = 1)
+        population.append(array_to_bitstring(indiv))
 
-    return parent, parent_sigma
+    for param in range(problem.meta_data.n_variables):
+        mutation_rates.append(random_generator.random())
 
-def recombination(parent, parent_sigma):
-    p1, p2 = np.random.choice(len(parent), 2, replace=False)
-    print(f"p1 {p1}")
-    print(f"p2 {p2}")
-    pass
-    # offspring = (parent[p1] + parent[p2]) / 2
-    # sigma = (parent_sigma[p1] + parent_sigma[p2]) / 2
+    return population, mutation_rates
 
-    # return offspring, sigma
+def discrete_recombination(r1, r2, problem):
+
+    individual = np.full((50), -1)
+
+    for idx in range(problem.meta_data.n_variables):
+        individual[[idx]] = np.random.choice([r1[idx], r2[idx]])
+
+    return individual.tolist()
+
+def recombine(population, n_offspring, problem):
+
+    offspring = list()
+    for i in range(n_offspring):
+        idx_r1 = random_generator.integers(low = 0, high = len(population))
+        idx_r2 = idx_r1
+        while idx_r1 == idx_r2:
+            idx_r2 = random_generator.integers(low = 0, high = len(population))
+        r1 = population[idx_r1]
+        r2 = population[idx_r2]
+        offspring.append(discrete_recombination(r1, r2, problem))
+
+    return offspring
+
+def adept_step_size(sigma, global_tau, tau, problem):
+
+    g = random_generator.normal(0, 1)
+    sigma_prime = np.full((50), 0)
+
+    for idx in range(problem.meta_data.n_variables):
+        sigma_prime[idx] = sigma[idx] * np.exp(global_tau * g + tau * random_generator.normal(0, 1))
+
+    return sigma_prime
+
+def mutate(offspring, sigma, problem):
+
+    offspring_prime = list()
+
+    for idx in range(len(offspring)):
+        offspring_prime.append(offspring[idx] + sigma * random_generator.normal(0, 1, size = problem.meta_data.n_variables))
+
+    return offspring
+
+def select(offspring, f_offspring, n_individuals, problem):
+
+    f_offspring_mapping = {tuple(offspring[idx]) : f_offspring[idx] for idx in range(len(offspring))}
+    sorted_offspring = sorted(offspring, key=lambda x: f_offspring_mapping[tuple(x)], reverse=True)
+
+    return [array_to_bitstring(np.array(x)) for x in sorted_offspring[:n_individuals]]
+
 
 def studentnumber1_studentnumber2_ES(problem):
-    # hint: F18 and F19 are Boolean problems. Consider how to present bitstrings as real-valued vectors in ES
-    # initial_pop = ... make sure you randomly create the first population
+
     mu_ = 5  # population size
-    lambda_ = 10  # offspring size
-    tau = 1.0 / np.sqrt(problem.meta_data.n_variables)  # step size adjustment parameter
+    lambda_ = 7 * mu_  # offspring size
+    global_tau = 1.0 / np.sqrt(2 * problem.meta_data.n_variables)
+    tau = 1.0 / np.sqrt(2 * np.sqrt(problem.meta_data.n_variables))
+    generation = 0
 
-    # Initialize population and strategy parameters
-    parent, parent_sigma = initialization(mu_, problem.meta_data.n_variables)
-    print(f"parent {parent}")
-    print(f"parent_sigma {parent_sigma}")
-    parent = [ind.tolist() for ind in parent]
-    print(f"list parent {parent}")
+    population, sigma = initialization(problem, mu_)
+    f_population = [problem(x) for x in population]
  
-    # `problem.state.evaluations` counts the number of function evaluation automatically,
-    # which is incremented by 1 whenever you call `problem(x)`.
-    # You could also maintain a counter of function evaluations if you prefer.
-    while problem.state.evaluations < budget:
-        parent_f = [problem(x) for x in parent]
-        print(f"parent_f {parent_f}")
+    while problem.state.evaluations < BUDGET:
+        offspring = recombine(population, lambda_, problem)
+        sigma = adept_step_size(sigma, global_tau, tau, problem)
+        mutated_offspring = mutate(offspring, sigma, problem)
+        f_offspring = [problem(array_to_bitstring(np.array(x))) for x in mutated_offspring]
+        population = select(mutated_offspring, f_offspring, mu_, problem)
+        generation += 1
 
-        # Recombination 
-        offspring = []
-        offspring_sigma = []
-        offspring_f = []
-
-        for i in range(lambda_):
-            o, s = recombination(parent, parent_sigma)
-            offspring.append(o)
-            offspring_sigma.append(s)
-
-        print(f"Offspring {offspring}")
-        print(f"offsprong sigma {offspring_sigma}")
-        break
+    print(f"Problem: {problem.meta_data.name}. Found an objective value of {problem.state.current_best.y} in {generation} generations.")
 
 def create_problem(fid: int):
-    # Declaration of problems to be tested.
-    problem = get_problem(fid, dimension=dimension, instance=1, problem_class=ProblemClass.PBO)
 
-    # Create default logger compatible with IOHanalyzer
-    # `root` indicates where the output files are stored.
-    # `folder_name` is the name of the folder containing all output. You should compress the folder 'run' and upload it to IOHanalyzer.
+    problem = get_problem(fid, dimension = DIMENSION, instance=1, problem_class=ProblemClass.PBO)
     l = logger.Analyzer(
-        root="data",  # the working directory in which a folder named `folder_name` (the next argument) will be created to store data
-        folder_name="run",  # the folder name to which the raw performance data will be stored
-        algorithm_name="genetic_algorithm",  # name of your algorithm
+        root="data",
+        folder_name="run",
+        algorithm_name="genetic_algorithm",
         algorithm_info="Practical assignment of the EA course",
     )
-    # attach the logger to the problem
     problem.attach_logger(l)
+
     return problem, l
 
 
 if __name__ == "__main__":
-    # this how you run your algorithm with 20 repetitions/independent run
+
+    BUDGET = 5000
+    DIMENSION = 50
+
+    np.random.seed(42)
+    random_generator = np.random.default_rng()
+
     F18, _logger = create_problem(18)
     for run in range(20): 
-        print("F18")
         studentnumber1_studentnumber2_ES(F18)
-        F18.reset() # it is necessary to reset the problem after each independent run
-    _logger.close() # after all runs, it is necessary to close the logger to make sure all data are written to the folder
+        F18.reset()
+    _logger.close()
 
     F19, _logger = create_problem(19)
     for run in range(20): 
-        print("F19")
         studentnumber1_studentnumber2_ES(F19)
         F19.reset()
     _logger.close()
-
-
