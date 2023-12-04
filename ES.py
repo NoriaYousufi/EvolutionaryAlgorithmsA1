@@ -36,7 +36,7 @@ def initialization(problem, n_individuals):
         population.append(array_to_bitstring(indiv))
 
     for param in range(problem.meta_data.n_variables):
-        mutation_rates.append(0.05)  # TODO: mutation rate initialization?
+        mutation_rates.append(random_generator.random())
 
     return population, mutation_rates
 
@@ -133,22 +133,14 @@ if __name__ == "__main__":
     np.random.seed(42)
     random_generator = np.random.default_rng()
 
-    TESTING = True
-    if not TESTING:
-        F18, _logger = create_problem(18)
-        for run in range(20): 
-            studentnumber1_studentnumber2_ES(F18)
-            F18.reset()
-        _logger.close()
-
-        F19, _logger = create_problem(19)
-        for run in range(20): 
-            studentnumber1_studentnumber2_ES(F19)
-            F19.reset()
-        _logger.close()
-
-    elif TESTING:
-        F18, _ = create_problem(18)
+    F18, _logger = create_problem(18)
+    for run in range(20): 
         studentnumber1_studentnumber2_ES(F18)
-        F19, _ = create_problem(19)
+        F18.reset()
+    _logger.close()
+
+    F19, _logger = create_problem(19)
+    for run in range(20): 
         studentnumber1_studentnumber2_ES(F19)
+        F19.reset()
+    _logger.close()
