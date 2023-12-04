@@ -1,6 +1,6 @@
 import numpy as np
-import random
 from ioh import get_problem, logger, ProblemClass
+import random
 
 
 # 1-point crossover
@@ -29,7 +29,7 @@ def bitflip_mutation(crossover_pop, problem, mutation_rate=0.01):  # TODO: Tune 
 
     for i in range(len(crossover_pop)):
         for j in range(problem.meta_data.n_variables):
-            if random.random() < mutation_rate:
+            if random_generator.random() < mutation_rate:
                 crossover_pop[i][j] = (crossover_pop[i][j] + 1) % 2
         mutated_pop.append(crossover_pop[i])
 
@@ -50,7 +50,8 @@ def tournament_selection(pop, f_pop, problem, tournament_size):  # TODO: Tune to
 def studentnumber1_studentnumber2_GA(problem):
 
     population_size = 20
-    population = [np.random.randint(0, 2, problem.meta_data.n_variables).tolist() for _ in range(population_size)]
+    population = [random_generator.integers(low = 0, high = 2, size = problem.meta_data.n_variables).tolist() for _ in range(population_size)]
+    # population = [np.random.randint(0, 2, problem.meta_data.n_variables).tolist() for _ in range(population_size)]
     generation = 0
 
     while problem.state.evaluations < BUDGET:
@@ -71,7 +72,7 @@ def create_problem(fid: int):
     l = logger.Analyzer(
         root="data",
         folder_name="run",
-        algorithm_name="genetic_algorithm",  # name of your algorithm
+        algorithm_name="genetic_algorithm",
         algorithm_info="Practical assignment of the EA course",
     )
     problem.attach_logger(l)
