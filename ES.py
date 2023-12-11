@@ -114,32 +114,18 @@ if __name__ == "__main__":
 
     BUDGET = 5000
     DIMENSION = 50
-    TUNING = False
 
     np.random.seed(42)
     random_generator = np.random.default_rng()
 
-    if not TUNING:
-        F18, _logger = create_problem(18)
-        for run in range(20): 
-            studentnumber1_studentnumber2_ES(F18, mu_ = 15, lambda_= 121)
-            F18.reset()
-        _logger.close()
+    F18, _logger = create_problem(18)
+    for run in range(20): 
+        studentnumber1_studentnumber2_ES(F18, mu_ = 15, lambda_= 121)
+        F18.reset()
+    _logger.close()
 
-        F19, _logger = create_problem(19)
-        for run in range(20): 
-            studentnumber1_studentnumber2_ES(F19, mu_= 5, lambda_= 98)
-            F19.reset()
-        _logger.close()
-    else:
-        for p in [19]:
-            problem, _logger = create_problem(p)
-            for population_size in range(2, 16):
-                for offspring_size in range(population_size, 130):
-                        mean = np.array([])
-                        for run in range(20):
-                            best = studentnumber1_studentnumber2_ES(problem, population_size, offspring_size)
-                            mean = np.append(mean, best)
-                            problem.reset()
-                        with open("./es-optimization.txt", "a") as fo:
-                            fo.write(f"{problem.meta_data.name}, {population_size}, {offspring_size}, {np.mean(mean)}\n")
+    F19, _logger = create_problem(19)
+    for run in range(20): 
+        studentnumber1_studentnumber2_ES(F19, mu_= 5, lambda_= 98)
+        F19.reset()
+    _logger.close()

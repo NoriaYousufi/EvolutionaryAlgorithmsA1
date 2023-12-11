@@ -78,34 +78,19 @@ if __name__ == "__main__":
 
     BUDGET = 5000
     DIMENSION = 50
-    TUNING = False
 
     np.random.seed(42)
     random_generator = np.random.default_rng()
 
-    if not TUNING:
 
-        F18, _logger = create_problem(18)
-        for run in range(20): 
-            studentnumber1_studentnumber2_GA(F18, population_size=6, tournament_size=5, mutation_rate=0.01)
-            F18.reset()
-        _logger.close()
+    F18, _logger = create_problem(18)
+    for run in range(20): 
+        studentnumber1_studentnumber2_GA(F18, population_size=6, tournament_size=5, mutation_rate=0.01)
+        F18.reset()
+    _logger.close()
 
-        F19, _logger = create_problem(19)
-        for run in range(20): 
-            studentnumber1_studentnumber2_GA(F19)
-            F19.reset()
-        _logger.close()
-    else:
-        for p in [18, 19]:
-            problem, _logger = create_problem(p)
-            for tournament_size in range(2, 10):
-                for mutation_rate in [0.001, 0.01, 0.1, 0.2, 0.5]:
-                    for population_size in range(tournament_size + 1, 101):
-                        mean = np.array([])
-                        for run in range(20):
-                            best = studentnumber1_studentnumber2_GA(problem, population_size=population_size, tournament_size=3)
-                            mean = np.append(mean, best)
-                            problem.reset()
-                        with open("./ga-optimization.txt", "a") as fo:
-                            fo.write(f"{problem.meta_data.name}, {population_size}, {tournament_size}, {mutation_rate}, {np.mean(mean)}\n")
+    F19, _logger = create_problem(19)
+    for run in range(20): 
+        studentnumber1_studentnumber2_GA(F19)
+        F19.reset()
+    _logger.close()
