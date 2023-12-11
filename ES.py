@@ -122,13 +122,13 @@ if __name__ == "__main__":
     if not TUNING:
         F18, _logger = create_problem(18)
         for run in range(20): 
-            studentnumber1_studentnumber2_ES(F18)
+            studentnumber1_studentnumber2_ES(F18, mu_ = 15, lambda_= 121)
             F18.reset()
         _logger.close()
 
         F19, _logger = create_problem(19)
         for run in range(20): 
-            studentnumber1_studentnumber2_ES(F19)
+            studentnumber1_studentnumber2_ES(F19, mu_= 5, lambda_= 98)
             F19.reset()
         _logger.close()
     else:
