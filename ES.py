@@ -103,7 +103,7 @@ def create_problem(fid: int):
     l = logger.Analyzer(
         root="data",
         folder_name="run",
-        algorithm_name="genetic_algorithm",
+        algorithm_name="evolution_strategies",
         algorithm_info="Practical assignment of the EA course",
     )
     problem.attach_logger(l)
