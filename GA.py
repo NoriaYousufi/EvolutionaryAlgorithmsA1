@@ -15,10 +15,13 @@ def one_point_crossover(population, problem, population_size):
         parent1 = population[p1_idx]
         parent2 = population[p2_idx]
 
-        crossover_idx = random_generator.integers(low = 1, high = problem.meta_data.n_variables)
-        child1 = parent1[:crossover_idx] + parent2[crossover_idx:]
-        child2 = parent2[:crossover_idx] + parent1[crossover_idx:]
-        crossover_pop.extend([child1, child2])
+        if random_generator.random() < 0.7:
+            crossover_idx = random_generator.integers(low = 1, high = problem.meta_data.n_variables)
+            child1 = parent1[:crossover_idx] + parent2[crossover_idx:]
+            child2 = parent2[:crossover_idx] + parent1[crossover_idx:]
+            crossover_pop.extend([child1, child2])
+        else:
+            crossover_pop.extend([parent1, parent2])
 
     return crossover_pop
 
@@ -82,15 +85,14 @@ if __name__ == "__main__":
     np.random.seed(42)
     random_generator = np.random.default_rng()
 
-
     F18, _logger = create_problem(18)
     for run in range(20): 
-        studentnumber1_studentnumber2_GA(F18, population_size=6, tournament_size=5, mutation_rate=0.01)
+        r = studentnumber1_studentnumber2_GA(F18, population_size=6, tournament_size=5, mutation_rate=0.01)
         F18.reset()
     _logger.close()
 
     F19, _logger = create_problem(19)
     for run in range(20): 
-        studentnumber1_studentnumber2_GA(F19)
+        r = studentnumber1_studentnumber2_GA(F19)
         F19.reset()
     _logger.close()
