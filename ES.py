@@ -22,7 +22,7 @@ def initialization(problem, n_individuals):
         population.append(array_to_bitstring(indiv))
 
     for param in range(problem.meta_data.n_variables):
-        mutation_rates.append(random_generator.random())  # TODO: Tune?
+        mutation_rates.append(random_generator.random())
 
     return population, mutation_rates
 
@@ -75,10 +75,10 @@ def select(offspring, f_offspring, n_individuals, problem):
 
     return [array_to_bitstring(np.array(x)) for x in sorted_offspring[:n_individuals]]
 
-def studentnumber1_studentnumber2_ES(problem):
+def studentnumber1_studentnumber2_ES(problem, mu_, lambda_):
 
-    mu_ = 5  # TODO: Tune?
-    lambda_ = 7 * mu_  # TODO: Tune?
+    # mu_ = 5  # TODO: Tune?
+    # lambda_ = 7 * mu_  # TODO: Tune?
 
     global_tau = 1.0 / np.sqrt(2 * problem.meta_data.n_variables)
     tau = 1.0 / np.sqrt(2 * np.sqrt(problem.meta_data.n_variables))
@@ -94,7 +94,8 @@ def studentnumber1_studentnumber2_ES(problem):
         population = select(mutated_offspring, f_offspring, mu_, problem)
         generation += 1
 
-    print(f"Problem: {problem.meta_data.name}. Found an objective value of {problem.state.current_best.y} in {generation} generations.")
+    # print(f"Problem: {problem.meta_data.name}. Found an objective value of {problem.state.current_best.y} in {generation} generations.")
+    return problem.state.current_best.y
 
 def create_problem(fid: int):
 
@@ -113,18 +114,32 @@ if __name__ == "__main__":
 
     BUDGET = 5000
     DIMENSION = 50
+    TUNING = False
 
     np.random.seed(42)
     random_generator = np.random.default_rng()
 
-    F18, _logger = create_problem(18)
-    for run in range(20): 
-        studentnumber1_studentnumber2_ES(F18)
-        F18.reset()
-    _logger.close()
+    if not TUNING:
+        F18, _logger = create_problem(18)
+        for run in range(20): 
+            studentnumber1_studentnumber2_ES(F18)
+            F18.reset()
+        _logger.close()
 
-    F19, _logger = create_problem(19)
-    for run in range(20): 
-        studentnumber1_studentnumber2_ES(F19)
-        F19.reset()
-    _logger.close()
+        F19, _logger = create_problem(19)
+        for run in range(20): 
+            studentnumber1_studentnumber2_ES(F19)
+            F19.reset()
+        _logger.close()
+    else:
+        for p in [19]:
+            problem, _logger = create_problem(p)
+            for population_size in range(2, 16):
+                for offspring_size in range(population_size, 130):
+                        mean = np.array([])
+                        for run in range(20):
+                            best = studentnumber1_studentnumber2_ES(problem, population_size, offspring_size)
+                            mean = np.append(mean, best)
+                            problem.reset()
+                        with open("./es-optimization.txt", "a") as fo:
+                            fo.write(f"{problem.meta_data.name}, {population_size}, {offspring_size}, {np.mean(mean)}\n")
