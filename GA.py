@@ -93,7 +93,7 @@ if __name__ == "__main__":
 
         F19, _logger = create_problem(19)
         for run in range(20): 
-            studentnumber1_studentnumber2_GA(F19, population_size=4, tournament_size=2, mutation_rate=0.1)
+            studentnumber1_studentnumber2_GA(F19)
             F19.reset()
         _logger.close()
     else:
