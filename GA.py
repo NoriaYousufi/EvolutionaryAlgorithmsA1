@@ -15,7 +15,7 @@ def one_point_crossover(population, problem, population_size):
         parent1 = population[p1_idx]
         parent2 = population[p2_idx]
 
-        if random_generator.random() < 0.7:
+        if random_generator.random() < 1.0:
             crossover_idx = random_generator.integers(low = 1, high = problem.meta_data.n_variables)
             child1 = parent1[:crossover_idx] + parent2[crossover_idx:]
             child2 = parent2[:crossover_idx] + parent1[crossover_idx:]
